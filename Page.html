@@ -1,0 +1,223 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your LinkedIn-Style GitHub Page</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f3f2ef;
+            color: #333;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+        .profile-header {
+            background: url('https://images.unsplash.com/photo-1516321310765-79e2e9876933?auto=format&fit=crop&w=1200');
+            background-size: cover;
+            background-position: center;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            position: relative;
+            text-align: center;
+        }
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            margin: -80px auto 20px;
+            display: block;
+            background-color: #fff;
+        }
+        .profile-info {
+            background: #fff;
+            padding: 20px;
+            border-radius: 0 0 10px 10px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .profile-info h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .profile-info .headline {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        .profile-info .contact {
+            font-size: 14px;
+            color: #0073b1;
+        }
+        .profile-info .contact a {
+            color: #0073b1;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .profile-info .contact a:hover {
+            text-decoration: underline;
+        }
+        .section {
+            background: #fff;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: #333;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 8px;
+        }
+        .section-item {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .section-item h3 {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        .section-item .title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .section-item .company, .section-item .dates, .section-item .location {
+            font-size: 18px;
+            color: #666;
+        }
+        .section-item p {
+            margin-top: 8px;
+            font-size: 14px;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #fff;
+            margin-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 14px;
+            color: #666;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 8px;
+            }
+            .profile-pic {
+                width: 120px;
+                height: 120px;
+                margin: -60px auto 16px;
+            }
+            .profile-info h1 {
+                font-size: 20px;
+            }
+            .profile-info .headline {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="profile-header"></header>
+        <div class="profile-info">
+            <img src="https://media.licdn.com/dms/image/v2/D5603AQFpuxrWQbDJFQ/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1710070109465?e=1750896000&v=beta&t=KOyTWFvc25Z8IB91sl01IiT0WB8TFe5v-t3lEBm1TRM" alt="Profile Picture" class="profile-pic">
+            <h1>Deron Huang</h1>
+            <p class="headline">Semiconductor Engineer | Trader | Passionate about Crypto and Stock investment</p>
+            <p class="contact">
+                <a href="mailto:iamderonhuang@gmail.com">Email</a> |
+                <a href="https://github.com/DeronHuang">GitHub</a> |
+                <a href="https://www.linkedin.com/in/deronhuang/">LinkedIn</a>
+            </p>
+        </div>
+
+        <section class="section">
+            <h2>About</h2>
+            <p>I am a semiconductor engineer with 7 years plasma etching process development experiences. I love quantative trading, crypto and stock investment.</p>
+        </section>
+
+        <section class="section">
+            <h2>Experience</h2>
+            <div class="section-item">
+                <h3>Engineering, Manager</h3>
+                <p class="title">Lam research</p>
+                <p class="dates">Jun 2024 - Present</p>
+                <p class="location">San Francisco, CA</p>
+                <p>tsmc N2/N1.4 MOL process development / RD & Fab production.</p>
+            </div>
+            <div class="section-item">
+                <h3>Team Leader</h3>
+                <p class="title">Tokyo Electron</p>
+                <p class="dates">Oct 2016 - Jun 2024</p>
+                <p class="location">Remote</p>
+                <p>tsmc N2/N1.4 FEOL process development</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Education</h2>
+            <div class="section-item">
+                <h3>M.S. in Material Science</h3>
+                <p class="title">National Taiwan University</p>
+                <p class="dates">2011 - 2013</p>
+                <p class="location">Taipei, Taiwan</p>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>© 2025 Your Name. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>
